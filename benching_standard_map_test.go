@@ -5,10 +5,6 @@ import (
 	"testing"
 )
 
-// todo -> https://github.com/orcaman/concurrent-map
-
-// todo - hash table исполь., метод цепочек
-
 func BenchmarkInsertStandardMap(b *testing.B) {
 	benchmarks := []struct {
 		elems int
