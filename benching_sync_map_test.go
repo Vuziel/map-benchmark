@@ -1,134 +1,133 @@
 package bench
 
 import (
+	"fmt"
 	"sync"
 	"testing"
 )
 
-func storeSyncMap(x int, b *testing.B) {
-	var testMap sync.Map
-	b.ResetTimer()
+func storeSyncMap(x int, testMap *sync.Map) {
 	for i := 0; i < x; i++ {
 		testMap.Store(i, i)
 	}
 }
 
-func loadSyncMap(x int, b *testing.B) {
-	var testMap sync.Map
+func loadSyncMap(x int, testMap *sync.Map) {
 	for i := 0; i < x; i++ {
-		testMap.Store(i, i)
-	}
+		j, _ := testMap.Load(i)
 
-	var holder any
-	b.ResetTimer()
-
-	for i := 0; i < x; i++ {
-		holder, _ = testMap.Load(i)
-	}
-
-	if holder != 0 {
+		if j != 0 {
+		}
 	}
 }
 
-func deleteSyncMap(x int, b *testing.B) {
-	var testMap sync.Map
-	for i := 0; i < x; i++ {
-		testMap.Store(i, i)
-	}
-
-	b.ResetTimer()
-
+func deleteSyncMap(x int, testMap *sync.Map) {
 	for i := 0; i < x; i++ {
 		testMap.Delete(i)
 	}
 }
 
-func BenchmarkInsertSyncMap_1_000_000(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		storeSyncMap(1_000_000, b)
+func BenchmarkInsertSyncMap(b *testing.B) {
+	benchmarks := []struct {
+		elems int
+	}{
+		{elems: 100},
+		{elems: 1_000},
+		{elems: 10_000},
+		{elems: 100_000},
+		{elems: 1_000_000},
+	}
+
+	for _, bench := range benchmarks {
+		var testMap sync.Map
+		b.ResetTimer()
+
+		b.Run(fmt.Sprintf("sync map with amount of elements %d", bench.elems), func(t *testing.B) {
+			for i := 0; i < b.N; i++ {
+				storeSyncMap(bench.elems, &testMap)
+			}
+		})
 	}
 }
 
-func BenchmarkInsertSyncMap_100_000(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		storeSyncMap(100_000, b)
+func BenchmarkSelectSyncMap(b *testing.B) {
+	benchmarks := []struct {
+		elems int
+	}{
+		{elems: 100},
+		{elems: 1_000},
+		{elems: 10_000},
+		{elems: 100_000},
+		{elems: 1_000_000},
+	}
+
+	for _, bench := range benchmarks {
+		var testMap sync.Map
+		for i := 0; i < bench.elems; i++ {
+			testMap.Store(i, i)
+		}
+		b.ResetTimer()
+
+		b.Run(fmt.Sprintf("sync map with amount of elements %d", bench.elems), func(t *testing.B) {
+			for i := 0; i < b.N; i++ {
+				loadSyncMap(bench.elems, &testMap)
+			}
+		})
 	}
 }
 
-func BenchmarkInsertSyncMap_10_000(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		storeSyncMap(10_000, b)
+func BenchmarkDeleteSyncMap(b *testing.B) {
+	benchmarks := []struct {
+		elems int
+	}{
+		{elems: 100},
+		{elems: 1_000},
+		{elems: 10_000},
+		{elems: 100_000},
+		{elems: 1_000_000},
+	}
+
+	for _, bench := range benchmarks {
+		var testMap sync.Map
+		for i := 0; i < bench.elems; i++ {
+			testMap.Store(i, i)
+		}
+		b.ResetTimer()
+
+		b.Run(fmt.Sprintf("sync map with amount of elements %d", bench.elems), func(t *testing.B) {
+			for i := 0; i < b.N; i++ {
+				deleteSyncMap(bench.elems, &testMap)
+			}
+		})
 	}
 }
 
-func BenchmarkInsertSyncMap_1000(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		storeSyncMap(1000, b)
-	}
-}
-
-func BenchmarkInsertSyncMap_100(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		storeSyncMap(100, b)
-	}
-}
-
-func BenchmarkSelectSyncMap_1_000_000(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		loadSyncMap(1_000_000, b)
-	}
-}
-
-func BenchmarkSelectSyncMap_100_000(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		loadSyncMap(100_000, b)
-	}
-}
-
-func BenchmarkSelectSyncMap_10_000(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		loadSyncMap(10_000, b)
-	}
-}
-
-func BenchmarkSelectSyncMap_1000(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		loadSyncMap(1000, b)
-	}
-}
-
-func BenchmarkSelectSyncMap_100(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		loadSyncMap(100, b)
-	}
-}
-
-func BenchmarkDeleteSyncMap_1_000_000(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		deleteSyncMap(1_000_000, b)
-	}
-}
-
-func BenchmarkDeleteSyncMap_100_000(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		deleteSyncMap(100_000, b)
-	}
-}
-
-func BenchmarkDeleteSyncMap_10_000(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		deleteSyncMap(10_000, b)
-	}
-}
-
-func BenchmarkDeleteSyncMap_1000(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		deleteSyncMap(1000, b)
-	}
-}
-
-func BenchmarkDeleteSyncMap_100(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		deleteSyncMap(100, b)
-	}
-}
+//func BenchmarkDeleteSyncMap_1_000_000(b *testing.B) {
+//	for i := 0; i < b.N; i++ {
+//		deleteSyncMap(1_000_000, b)
+//	}
+//}
+//
+//func BenchmarkDeleteSyncMap_100_000(b *testing.B) {
+//	for i := 0; i < b.N; i++ {
+//		deleteSyncMap(100_000, b)
+//	}
+//}
+//
+//func BenchmarkDeleteSyncMap_10_000(b *testing.B) {
+//	for i := 0; i < b.N; i++ {
+//		deleteSyncMap(10_000, b)
+//	}
+//}
+//
+//func BenchmarkDeleteSyncMap_1000(b *testing.B) {
+//	for i := 0; i < b.N; i++ {
+//		deleteSyncMap(1000, b)
+//	}
+//}
+//
+//func BenchmarkDeleteSyncMap_100(b *testing.B) {
+//	for i := 0; i < b.N; i++ {
+//		deleteSyncMap(100, b)
+//	}
+//}
