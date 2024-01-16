@@ -1,3 +1,6 @@
+go test -run ^$ -bench=.  -benchtime=100x
+* 12 threads
+
 # Select
 
 |           |      map      |  map + mutex  | map + rwMutex |    sync.Map     |
