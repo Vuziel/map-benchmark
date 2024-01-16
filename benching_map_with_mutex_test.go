@@ -1,6 +1,7 @@
 package bench
 
 import (
+	"fmt"
 	"sync"
 	"testing"
 )
@@ -31,134 +32,98 @@ func (s *StandardMapWithMutex) Delete(key int) {
 	s.mu.Unlock()
 }
 
-func insertXStandardMapWithMutex(x int, b *testing.B) {
-	testMap := StandardMapWithMutex{testMap: make(map[int]int, x)}
-	b.ResetTimer()
+func BenchmarkInsertStandardMapWithMutexMap(b *testing.B) {
+	benchmarks := []struct {
+		elems int
+	}{
+		{elems: 100},
+		{elems: 1_000},
+		{elems: 10_000},
+		{elems: 100_000},
+		{elems: 1_000_000},
+	}
+
+	for _, bench := range benchmarks {
+		testMap := StandardMapWithMutex{testMap: make(map[int]int, bench.elems)}
+		b.ResetTimer()
+
+		b.Run(fmt.Sprintf("standard map mutex with amount of elements %d", bench.elems), func(t *testing.B) {
+			for i := 0; i < b.N; i++ {
+				insertStandardMapWithMutex(bench.elems, &testMap)
+			}
+		})
+	}
+}
+
+func insertStandardMapWithMutex(x int, testMap *StandardMapWithMutex) {
 	for i := 0; i < x; i++ {
 		testMap.Insert(i)
 	}
 }
 
-func BenchmarkInsertStandardMapWithMutex_1_000_000(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		insertXStandardMapWithMutex(1_000_000, b)
+func BenchmarkSelectStandardMapWithMutexMap(b *testing.B) {
+	benchmarks := []struct {
+		elems int
+	}{
+		{elems: 100},
+		{elems: 1_000},
+		{elems: 10_000},
+		{elems: 100_000},
+		{elems: 1_000_000},
+	}
+
+	for _, bench := range benchmarks {
+		testMap := StandardMapWithMutex{testMap: make(map[int]int, bench.elems)}
+		for i := 0; i < bench.elems; i++ {
+			testMap.Insert(i)
+		}
+		b.ResetTimer()
+
+		b.Run(fmt.Sprintf("standard map mutex with amount of elements %d", bench.elems), func(t *testing.B) {
+			for i := 0; i < b.N; i++ {
+				selectStandardMapWithMutex(bench.elems, &testMap)
+			}
+		})
 	}
 }
 
-func BenchmarkInsertStandardMapWithMutex_100_000(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		insertXStandardMapWithMutex(100_000, b)
-	}
-}
-
-func BenchmarkInsertStandardMapWithMutex_10_000(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		insertXStandardMapWithMutex(10_000, b)
-	}
-}
-
-func BenchmarkInsertStandardMapWithMutex_1000(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		insertXStandardMapWithMutex(1000, b)
-	}
-}
-
-func BenchmarkInsertStandardMapWithMutex_100(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		insertXStandardMapWithMutex(100, b)
-	}
-}
-
-func selectXStandardMapWithMutex(x int, b *testing.B) {
-	testMap := StandardMapWithMutex{testMap: make(map[int]int, x)}
+func selectStandardMapWithMutex(x int, testMap *StandardMapWithMutex) {
 	for i := 0; i < x; i++ {
-		testMap.Insert(i)
-	}
+		j := testMap.Select(i)
+		if j != 0 {
 
-	var holder int
-	b.ResetTimer()
-
-	for i := 0; i < x; i++ {
-		holder = testMap.Select(i)
-	}
-
-	if holder != 0 {
+		}
 	}
 }
 
-func BenchmarkSelectStandardMapWithMutex_1_000_000(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		selectXStandardMapWithMutex(1_000_000, b)
+func BenchmarkDeleteStandardMapWithMutexMap(b *testing.B) {
+	benchmarks := []struct {
+		elems int
+	}{
+		{elems: 100},
+		{elems: 1_000},
+		{elems: 10_000},
+		{elems: 100_000},
+		{elems: 1_000_000},
+	}
+
+	for _, bench := range benchmarks {
+		testMap := StandardMapWithMutex{testMap: make(map[int]int, bench.elems)}
+		for i := 0; i < bench.elems; i++ {
+			testMap.Insert(i)
+		}
+		b.ResetTimer()
+
+		b.Run(fmt.Sprintf("standard map mutex with amount of elements %d", bench.elems), func(t *testing.B) {
+			for i := 0; i < b.N; i++ {
+				deleteStandardMapWithMutex(bench.elems, &testMap)
+			}
+		})
 	}
 }
 
-func BenchmarkSelectStandardMapWithMutex_100000(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		selectXStandardMapWithMutex(100_000, b)
-	}
-}
-
-func BenchmarkSelectStandardMapWithMutex_10000(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		selectXStandardMapWithMutex(10_000, b)
-	}
-}
-
-func BenchmarkSelectStandardMapWithMutex_1000(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		selectXStandardMapWithMutex(1000, b)
-	}
-}
-
-func BenchmarkSelectStandardMapWithMutex_100(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		selectXStandardMapWithMutex(100, b)
-	}
-}
-
-func deleteXStandardMapWithMutex(x int, b *testing.B) {
-	testMap := StandardMapWithMutex{testMap: make(map[int]int, x)}
-	for i := 0; i < x; i++ {
-		testMap.Insert(i)
-	}
-
-	var holder int
-	b.ResetTimer()
-
+func deleteStandardMapWithMutex(x int, testMap *StandardMapWithMutex) {
 	for i := 0; i < x; i++ {
 		testMap.Delete(i)
-	}
-
-	if holder != 0 {
-	}
-}
-
-func BenchmarkDeleteStandardMapWithMutex_1_000_000(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		deleteXStandardMapWithMutex(1_000_000, b)
-	}
-}
-
-func BenchmarkDeleteStandardMapWithMutex_100_000(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		deleteXStandardMapWithMutex(100_000, b)
-	}
-}
-
-func BenchmarkDeleteStandardMapWithMutex_10_000(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		deleteXStandardMapWithMutex(10_000, b)
-	}
-}
-
-func BenchmarkDeleteStandardMapWithMutex_1000(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		deleteXStandardMapWithMutex(1000, b)
-	}
-}
-
-func BenchmarkDeleteStandardMapWithMutex_100(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		deleteXStandardMapWithMutex(100, b)
 	}
 }
